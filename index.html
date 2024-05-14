@@ -87,6 +87,14 @@
     </section>
   </main>
 
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+  <script>
+    window.TrackJS && TrackJS.install({
+      token: "93c4cf36676e4e818512be482906b566"
+      // for more configuration options, see https://docs.trackjs.com
+    });
+  </script>
+
   <script>
     let form = document.querySelector('form');
     form.addEventListener('submit', e => {
@@ -100,8 +108,96 @@
 
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
 
-    // Start your code here
-    // You may move this JS to another file if you wish
+    window.addEventListener('error', (event) => {
+      console.log(`An error just occurred (${event.error})`);
+    });
+
+    const functions = [
+      () => console.log("Hello World"),
+      () => console.error("Error"),
+      () => {
+        console.count("Button counter");
+      },
+      () => console.warn("Warning"),
+      () => {
+        const number = 2;
+        console.assert(number === 3, '%o', { number: number, errorMessage: "The number does not equal 3" });
+      },
+      () => console.clear(),
+      (e) => console.dir(e.currentTarget),
+      (e) => console.dirxml(e.currentTarget),
+      () => {
+        console.log("This is the outer level");
+        console.group();
+      },
+      () => {
+        console.groupEnd();
+        console.log("Back to the outer level");
+      },
+      () => console.table(["apples", "oranges", "bananas"]),
+      () => {
+        console.time("OK");
+        console.log("Started timer");
+      },
+      () => {
+        console.timeEnd("OK");
+      },
+      () => {
+        function foo() {
+          function bar() {
+            console.trace();
+          }
+          bar();
+        }
+
+        foo();
+      },
+      () => {
+        thisFunctionCantExist();
+      }
+    ]
+
+    for (let i in errorBtns) {
+      const button = errorBtns[i];
+      const func = functions[i];
+
+      button.addEventListener("click", () => func());
+    }
+
+    class FormInputError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = "FormInputError"
+      }
+    }
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      let result = "";
+
+      try {
+        const first = document.querySelector("#first-num").value;
+        const second = document.querySelector("#second-num").value;
+        const op = document.querySelector("#operator").value;
+
+        if (isNaN(first) || isNaN(second)) {
+          throw new FormInputError("First number or second number is NaN");
+        }
+
+        if (op === "/" && second == 0) {
+          throw new FormInputError("Division with denominator zero is not valid");
+        }
+
+        result = eval(`${first} ${op} ${second}`);
+      } catch (e) {
+        console.group('Calculator Error');
+        console.log('The calculator triggered an error:');
+        console.error(e);
+        console.groupEnd();
+      } finally {
+        document.querySelector("output").textContent = result;
+      }
+    });
   </script>
 </body>
 
